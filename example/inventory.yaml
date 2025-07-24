@@ -1,0 +1,14 @@
+all:
+  vars:
+    cluster_fqdn_name: pve.examlpe.cluster
+    contact_mail: admin@pve.example.cluster
+  children:
+    cluster_nodes:
+      hosts:
+        example-node-01: {}
+        example-node-02: {}
+        example-node-03: {}
+    ansible_controller:
+      hosts:
+        example-controller:
+          connection: local
