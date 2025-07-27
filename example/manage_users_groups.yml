@@ -1,14 +1,13 @@
 ---
 - name: Manage Proxmox users and groups
-  hosts: ansible_controller
+  hosts: cluster_nodes
   gather_facts: false
   vars:
-    api_host: "{{ cluster_fqdn_name }}"
-    user: root
-    domain: pam
-    api_password: changeme
+    api_host: "{{ ansible_play_hosts | first }}"
+    user: test
+    domain: pve
     validate_certs: false
-
+    api_password: test1234
     proxmox_groups:
       - name: groupA
       - name: groupB
@@ -22,10 +21,13 @@
           - groupB
 
   tasks:
+  - name: run from controller
+    delegate_to: example-controller
+    block:
     - name: Ensure groups exist
       community.proxmox.proxmox_group:
         api_host: "{{ api_host }}"
-        api_user: "{{ user }}@{{ domain }}"
+        api_user: "{{ user }}@{{domain}}"
         api_password: "{{ api_password }}"
         validate_certs: "{{ validate_certs }}"
         name: "{{ item.name }}"

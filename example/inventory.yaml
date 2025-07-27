@@ -6,9 +6,14 @@ all:
     cluster_nodes:
       hosts:
         example-node-01: {}
-        example-node-02: {}
-        example-node-03: {}
+        #example-node-02: {}
+        #example-node-03: {}
     ansible_controller:
       hosts:
         example-controller:
-          connection: local
+          ansible_host: localhost
+          ansible_connection: local
+  hosts:
+    example-node-01: {}
+    example-node-02: {}
+    example-node-03: {}
