@@ -1,0 +1,45 @@
+---
+- name: Remove Proxmox users and groups
+  hosts: cluster_nodes
+  gather_facts: false
+  vars:
+    api_host: "{{ ansible_play_hosts | first }}"
+    user: test
+    domain: pve
+    validate_certs: false
+    api_password: test1234
+    proxmox_groups:
+      - groupA
+      - groupB
+      - xy
+
+  tasks:
+  - name: run from controller
+    delegate_to: example-controller
+    block:
+    - name: Remove a group from user
+      community.proxmox.proxmox_user:
+        api_host: "{{ api_host }}"
+        api_user: "{{ user }}@{{ domain }}"
+        api_password: "{{ api_password }}"
+        validate_certs: "{{ validate_certs }}"
+        userid: "usernamete@pve"
+        groups:
+          - groupA
+    - name: Remove a user
+      community.proxmox.proxmox_user:
+        api_host: "{{ api_host }}"
+        api_user: "{{ user }}@{{ domain }}"
+        api_password: "{{ api_password }}"
+        validate_certs: "{{ validate_certs }}"
+        userid: "usernamete@pve"
+        state: absent
+    - name: Remove groups
+      community.proxmox.proxmox_group:
+        api_host: "{{ api_host }}"
+        api_user: "{{ user }}@{{ domain }}"
+        api_password: "{{ api_password }}"
+        validate_certs: "{{ validate_certs }}"
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ proxmox_groups }}"
