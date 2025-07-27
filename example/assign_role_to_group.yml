@@ -1,0 +1,35 @@
+---
+- name: Associate a role with a group on a resource
+  hosts: cluster_nodes
+  gather_facts: false
+  vars:
+    api_host: "{{ ansible_play_hosts | first }}"
+    user: test
+    domain: pve
+    validate_certs: false
+    api_password: test1234
+    group_name: example_group
+    path: "/"
+    role_name: "NoAccess"
+  tasks:
+  - name: run from controller
+    delegate_to: example-controller
+    block:
+    - name: Ensure group exists
+      community.proxmox.proxmox_group:
+        api_host: "{{ api_host }}"
+        api_user: "{{ user }}@{{ domain }}"
+        api_password: "{{ api_password }}"
+        validate_certs: "{{ validate_certs }}"
+        name: "{{ group_name }}"
+    - name: Associate role with group
+      community.proxmox.proxmox_access_acl:
+        api_host: "{{ api_host }}"
+        api_user: "{{ user }}@{{ domain }}"
+        api_password: "{{ api_password }}"
+        validate_certs: "{{ validate_certs }}"
+        state: present
+        path: "{{ path }}"
+        roleid: "{{ role_name }}"
+        type: group
+        ugid: "{{ group_name }}"
