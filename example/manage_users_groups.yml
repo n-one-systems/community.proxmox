@@ -1,0 +1,42 @@
+---
+- name: Manage Proxmox users and groups
+  hosts: ansible_controller
+  gather_facts: false
+  vars:
+    api_host: "{{ cluster_fqdn_name }}"
+    user: root
+    domain: pam
+    api_password: changeme
+    validate_certs: false
+
+    groups:
+      - name: groupA
+      - name: groupB
+      - name: xy
+
+    users:
+      - name: usernamete
+        realm: pve
+        groups:
+          - groupA
+          - groupB
+
+  tasks:
+    - name: Ensure groups exist
+      community.proxmox.proxmox_group:
+        api_host: "{{ api_host }}"
+        api_user: "{{ user }}@{{ domain }}"
+        api_password: "{{ api_password }}"
+        validate_certs: "{{ validate_certs }}"
+        name: "{{ item.name }}"
+      loop: "{{ groups }}"
+
+    - name: Ensure users exist
+      community.proxmox.proxmox_user:
+        api_host: "{{ api_host }}"
+        api_user: "{{ user }}@{{ domain }}"
+        api_password: "{{ api_password }}"
+        validate_certs: "{{ validate_certs }}"
+        userid: "{{ item.name }}@{{ item.realm | default('pve') }}"
+        groups: "{{ item.groups | default([]) }}"
+      loop: "{{ users }}"
