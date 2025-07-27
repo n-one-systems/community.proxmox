@@ -1,0 +1,44 @@
+---
+- name: Manage Proxmox users and groups
+  hosts: cluster_nodes
+  gather_facts: false
+  vars:
+    api_host: "{{ ansible_play_hosts | first }}"
+    user: test
+    domain: pve
+    validate_certs: false
+    api_password: test1234
+    proxmox_groups:
+      - name: groupA
+      - name: groupB
+      - name: xy
+
+    proxmox_users:
+      - name: usernamete
+        realm: pve
+        groups:
+          - groupA
+          - groupB
+
+  tasks:
+  - name: run from controller
+    delegate_to: example-controller
+    block:
+    - name: Ensure groups exist
+      community.proxmox.proxmox_group:
+        api_host: "{{ api_host }}"
+        api_user: "{{ user }}@{{domain}}"
+        api_password: "{{ api_password }}"
+        validate_certs: "{{ validate_certs }}"
+        name: "{{ item.name }}"
+      loop: "{{ proxmox_groups }}"
+
+    - name: Ensure users exist
+      community.proxmox.proxmox_user:
+        api_host: "{{ api_host }}"
+        api_user: "{{ user }}@{{ domain }}"
+        api_password: "{{ api_password }}"
+        validate_certs: "{{ validate_certs }}"
+        userid: "{{ item.name }}@{{ item.realm | default('pve') }}"
+        groups: "{{ item.groups | default([]) }}"
+      loop: "{{ proxmox_users }}"
